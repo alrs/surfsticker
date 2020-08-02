@@ -26,3 +26,6 @@ let g:go_play_browser_command = 'surfsticker -sticker godoc %URL% &'
 This opens a window labeled with `godoc` that uses the following stylesheet:
 `~/.surf/styles/godoc.css`. So long as that window stays open, it will be
 reused every time I `surfsticker -sticker godoc https://example.com`.
+
+![surfsticker screenshot](https://alrs.tilde.team/surfsticker.png)
+
