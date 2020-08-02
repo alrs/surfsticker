@@ -13,7 +13,6 @@ import (
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/BurntSushi/xgbutil/xprop"
-	//	"github.com/davecgh/go-spew/spew"
 )
 
 var X *xgbutil.XUtil
@@ -27,6 +26,9 @@ func init() {
 	}
 	flag.StringVar(&sticker, "sticker", "default", "single surf window")
 	flag.Parse()
+	// the sticker variable is used both as an xproperty value as well as
+	// part of the stylesheet argument to exec.Command when it is executing
+	// surf. Keep it simple. Alphanumeric should be plenty-enough.
 	err = validateSticker(sticker)
 	if err != nil {
 		log.Fatal(err)
