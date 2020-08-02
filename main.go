@@ -57,13 +57,6 @@ func startSurf() (*xproto.Window, error) {
 	scanner := bufio.NewScanner(surfOut)
 	scanner.Scan()
 	xidStr := scanner.Text()
-	go func() {
-		// keep on scanning so the buffer doesn't balloon,
-		// do nothing with it
-		for {
-			scanner.Scan()
-		}
-	}()
 	xid, err := strconv.ParseUint(xidStr, 10, 32)
 	if err != nil {
 		return nil, err
