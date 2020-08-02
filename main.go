@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -12,7 +11,6 @@ import (
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/BurntSushi/xgbutil/xprop"
-	//	"github.com/davecgh/go-spew/spew"
 )
 
 var X *xgbutil.XUtil
@@ -23,6 +21,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func openURL(w xproto.Window, u string) error {
+	return xprop.ChangeProp(X, w, 8, "_SURF_GO", "STRING", []byte(u))
 }
 
 func findRunningSurf() (*xproto.Window, error) {
@@ -42,7 +44,7 @@ func findRunningSurf() (*xproto.Window, error) {
 
 func startSurf() (*xproto.Window, error) {
 	// setup and start surf
-	surf := exec.Command("surf", "-w")
+	surf := exec.Command("surf", "-w", "-b")
 	surfOut, err := surf.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -83,10 +85,8 @@ func main() {
 		}
 	}
 	log.Printf("surfID is: %d", *surfID)
-	// xprop -f _SURF_GO 8s -set _SURF_GO "https://google.com"
-	xpropSet := exec.Command("xprop", "-id", fmt.Sprintf("%d", *surfID), "-f", "_SURF_GO", "8s", "-set", "_SURF_GO", url)
-	_, err = xpropSet.Output()
+	err = openURL(*surfID, url)
 	if err != nil {
-		log.Fatalf("xpropset: %v", err)
+		log.Fatalf("openURL: %v", err)
 	}
 }
