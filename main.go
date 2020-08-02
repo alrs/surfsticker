@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"flag"
+	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"strconv"
+	"unicode"
 
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/BurntSushi/xgbutil"
@@ -14,6 +16,7 @@ import (
 )
 
 var X *xgbutil.XUtil
+var style string
 
 func init() {
 	var err error
@@ -21,6 +24,17 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	flag.StringVar(&style, "style", "default", "surf stylesheet, no extension")
+	flag.Parse()
+}
+
+func constructStylePath(s string) (string, error) {
+	for _, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
+			return "", fmt.Errorf("%s cannot contain punctuation")
+		}
+	}
+	return fmt.Sprintf("~/.surf/styles/%s.css", s), nil
 }
 
 func openURL(w xproto.Window, u string) error {
@@ -44,7 +58,11 @@ func findRunningSurf() (*xproto.Window, error) {
 
 func startSurf() (*xproto.Window, error) {
 	// setup and start surf
-	surf := exec.Command("surf", "-w", "-b")
+	safeStyle, err := constructStylePath(style)
+	if err != nil {
+		return nil, err
+	}
+	surf := exec.Command("surf", "-w", "-b", "-C", safeStyle)
 	surfOut, err := surf.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -66,10 +84,10 @@ func startSurf() (*xproto.Window, error) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		log.Fatal("requires URL as an argument")
+	if flag.NArg() != 1 {
+		log.Fatalf("surfsticker requires a URL as its argument")
 	}
-	url := os.Args[1]
+	url := flag.Arg(0)
 	surfID, err := findRunningSurf()
 	if surfID == nil {
 		surfID, err = startSurf()
