@@ -37,17 +37,12 @@ var X *xgbutil.XUtil
 var sticker string
 
 func init() {
-	var err error
-	X, err = xgbutil.NewConn()
-	if err != nil {
-		log.Fatal(err)
-	}
 	flag.StringVar(&sticker, "sticker", "default", "single surf window")
 	flag.Parse()
 	// the sticker variable is used both as an xproperty value as well as
 	// part of the stylesheet argument to exec.Command when it is executing
 	// surf. Keep it simple. Alphanumeric should be plenty-enough.
-	err = validateSticker(sticker)
+	err := validateSticker(sticker)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,7 +113,13 @@ func startSurf(sticker string) (*xproto.Window, error) {
 }
 
 func main() {
+	var err error
+	X, err = xgbutil.NewConn()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer X.Conn().Close()
+
 	if flag.NArg() < 1 {
 		log.Fatalf("surfsticker requires a URL as its argument")
 	}
