@@ -56,7 +56,7 @@ func init() {
 func validateSticker(s string) error {
 	for _, r := range s {
 		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
-			return fmt.Errorf("%s cannot contain punctuation")
+			return fmt.Errorf("%s cannot contain punctuation", s)
 		}
 	}
 	return nil
@@ -118,11 +118,15 @@ func startSurf(sticker string) (*xproto.Window, error) {
 }
 
 func main() {
-	if flag.NArg() != 1 {
+	if flag.NArg() < 1 {
 		log.Fatalf("surfsticker requires a URL as its argument")
 	}
 	url := flag.Arg(0)
 	surfID, err := findRunningSurf(sticker)
+	if err != nil {
+		log.Fatalf("findRunningSurf: %v", err)
+	}
+
 	if surfID == nil {
 		surfID, err = startSurf(sticker)
 		if err != nil {
