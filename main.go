@@ -118,6 +118,7 @@ func startSurf(sticker string) (*xproto.Window, error) {
 }
 
 func main() {
+	defer X.Conn().Close()
 	if flag.NArg() < 1 {
 		log.Fatalf("surfsticker requires a URL as its argument")
 	}
