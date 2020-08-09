@@ -23,9 +23,15 @@ brightness doesn't melt my eyes. To invoke it, I put the following in my
 ```
 let g:go_play_browser_command = 'surfsticker -sticker godoc %URL% &'
 ```
-This opens a window labeled with `godoc` that uses the following stylesheet:
-`~/.surf/styles/godoc.css`. So long as that window stays open, it will be
-reused every time I `surfsticker -sticker godoc https://example.com`.
+This opens a surf window labeled with the  `godoc` `_STICKER` that uses 
+the following stylesheet: `~/.surf/styles/godoc.css`. So long as that window 
+stays open, it will be reused every time I 
+`surfsticker -sticker godoc https://example.com`.
 
 ![surfsticker screenshot](https://alrs.tilde.team/surfsticker.png)
 
+installation
+============
+So long as the `go` toolchain is available and you've added `~/go/bin` to your
+regular path, `surfsticker` should install and be usable by invoking
+`go install ./...` in its root.
