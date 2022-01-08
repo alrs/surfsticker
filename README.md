@@ -35,3 +35,5 @@ installation
 So long as the `go` toolchain is available and you've added `~/go/bin` to your
 regular path, `surfsticker` should install and be usable by invoking
 `go install ./...` in its root.
+
+`surfsticker` uses the Linux `inotify` API.

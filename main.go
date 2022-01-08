@@ -23,14 +23,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os/exec"
 	"strconv"
+	"syscall"
+	"time"
 	"unicode"
 
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/BurntSushi/xgbutil/xprop"
+	"k8s.io/utils/inotify"
 )
 
 var X *xgbutil.XUtil
@@ -62,7 +66,38 @@ func constructStylePath(s string) string {
 }
 
 func openURL(w xproto.Window, u string) error {
-	return xprop.ChangeProp(X, w, 8, "_SURF_GO", "STRING", []byte(u))
+	changeProp := func(u string) error {
+		return xprop.ChangeProp(X, w, 8, "_SURF_GO", "STRING", []byte(u))
+	}
+	parsed, err := url.Parse(u)
+	if err != nil {
+		return err
+	}
+	if parsed.Scheme != "file" {
+		return changeProp(u)
+	}
+	watcher, err := inotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+	err = watcher.AddWatch(parsed.Path, syscall.IN_CLOSE)
+	if err != nil {
+		return err
+	}
+	err = changeProp(parsed.Path)
+	if err != nil {
+		return err
+	}
+	select {
+	case <-watcher.Event:
+		return nil
+	case err := <-watcher.Error:
+		return err
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("timeout watching tempfile: %v", parsed.Path)
+	}
+
 }
 
 func findRunningSurf(sticker string) (*xproto.Window, error) {
@@ -123,7 +158,7 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatalf("surfsticker requires a URL as its argument")
 	}
-	url := flag.Arg(0)
+	urlStr := flag.Arg(0)
 	surfID, err := findRunningSurf(sticker)
 	if err != nil {
 		log.Fatalf("findRunningSurf: %v", err)
@@ -136,7 +171,8 @@ func main() {
 		}
 	}
 	log.Printf("surfID is: %d", *surfID)
-	err = openURL(*surfID, url)
+
+	err = openURL(*surfID, urlStr)
 	if err != nil {
 		log.Fatalf("openURL: %v", err)
 	}
